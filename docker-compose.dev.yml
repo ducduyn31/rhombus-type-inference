@@ -10,15 +10,12 @@ x-defaults:
 services:
   backend:
     <<: *defaults
-    command: pnpm --filter backend dev
+    command: poetry run python manage.py runserver
     build:
-      args:
-        APP: backend
-        START_COMMAND: dev
       context: .
-      dockerfile: ./dev.Dockerfile
+      dockerfile: ./apps/backend/dev.Dockerfile
     volumes:
-      - ./apps/backend:/app/apps/backend
+      - ./apps/backend:/app
     depends_on:
       - db
       - storage
@@ -30,7 +27,7 @@ services:
         APP: web
         START_COMMAND: dev
       context: .
-      dockerfile: ./dev.Dockerfile
+      dockerfile: apps/web/dev.Dockerfile
     volumes:
       - ./apps/web:/app/apps/web
       - /app/apps/web/node_modules

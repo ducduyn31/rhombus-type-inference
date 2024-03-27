@@ -2,6 +2,7 @@
   "name": "backend",
   "version": "0.1.0",
   "scripts": {
-    "dev": "node index.js"
+    "dev": "poetry env use backend && poetry run python manage.py runserver",
+    "build": "poetry env use backend && poetry install --no-root"
   }
 }
