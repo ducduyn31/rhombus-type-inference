@@ -1,0 +1,79 @@
+version: "3.7"
+
+x-defaults:
+  &defaults
+  init: true
+  tty: true
+  networks:
+    - rhombus-net
+
+services:
+  backend:
+    <<: *defaults
+    command: pnpm --filter backend dev
+    build:
+      args:
+        APP: backend
+        START_COMMAND: dev
+      context: .
+      dockerfile: ./dev.Dockerfile
+    volumes:
+      - ./apps/backend:/app/apps/backend
+    depends_on:
+      - db
+      - storage
+  web:
+    <<: *defaults
+    command: pnpm --filter web dev
+    build:
+      args:
+        APP: web
+        START_COMMAND: dev
+      context: .
+      dockerfile: ./dev.Dockerfile
+    volumes:
+      - ./apps/web:/app/apps/web
+      - /app/apps/web/node_modules
+    depends_on:
+      - storage
+      - backend
+  db:
+    <<: *defaults
+    image: postgres
+    restart: always
+    shm_size: 128mb
+    environment:
+      POSTGRES_PASSWORD: password
+    volumes:
+      - db-data:/var/lib/postgresql/data
+  storage:
+    <<: *defaults
+    image: bitnami/minio
+    ports:
+      - "9001:9001"
+    restart: always
+    environment:
+      MINIO_ROOT_USER: minio
+      MINIO_ROOT_PASSWORD: miniosecret
+    volumes:
+      - storage-data:/data
+  gateway:
+    <<: *defaults
+    image: nginx
+    ports:
+      - "8888:80"
+    volumes:
+        - ./configs/nginx.conf:/etc/nginx/conf.d/default.conf
+    depends_on:
+      - web
+      - backend
+      - storage
+
+networks:
+  rhombus-net:
+    driver: bridge
+
+volumes:
+  db-data:
+  storage-data:
+

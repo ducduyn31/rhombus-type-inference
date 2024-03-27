@@ -1,4 +1,5 @@
 import type { StorybookConfig } from "@storybook/react-vite";
+import tsconfigPaths from "vite-tsconfig-paths";
 
 import { join, dirname } from "path";
 
@@ -31,6 +32,10 @@ const config: StorybookConfig = {
     return {
       ...config,
       define: { "process.env": {} },
+      build: {
+
+      },
+      plugins: [tsconfigPaths()],
       resolve: {
         ...config.resolve,
         alias: [

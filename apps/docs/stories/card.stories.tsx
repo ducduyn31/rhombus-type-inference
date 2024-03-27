@@ -1,11 +1,11 @@
 import React from "react";
 import type {Meta, StoryObj} from "@storybook/react";
-import {Card} from "@repo/ui/card";
+import {Card} from "@repo/ui/components";
 
 const meta: Meta<typeof Card> = {
   component: Card,
   argTypes: {
-    title: { control: "text" },
+    title: {control: "text"},
   },
 };
 
