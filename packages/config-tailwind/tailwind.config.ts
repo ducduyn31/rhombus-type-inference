@@ -1,7 +1,8 @@
 import type { Config } from "tailwindcss";
 
 // We want each package to be responsible for its own content.
-const config: Omit<Config, "content"> = {
+const config: Config = {
+  content: ["src/**/*.{js,jsx,ts,tsx}", "../../packages/ui/src/**/*.{js,jsx,ts,tsx}"],
   theme: {
     extend: {
       backgroundImage: {

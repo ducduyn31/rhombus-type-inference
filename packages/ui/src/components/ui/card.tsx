@@ -1,5 +1,4 @@
 import * as React from "react"
-
 import { cn } from "@ui/lib/utils"
 
 const Card = React.forwardRef<
@@ -7,11 +6,11 @@ const Card = React.forwardRef<
   React.HTMLAttributes<HTMLDivElement>
 >(({ className, ...props }, ref) => (
   <div
-    ref={ref}
     className={cn(
       "ui-rounded-xl ui-border ui-bg-card ui-text-card-foreground ui-shadow",
       className
     )}
+    ref={ref}
     {...props}
   />
 ))
@@ -22,8 +21,8 @@ const CardHeader = React.forwardRef<
   React.HTMLAttributes<HTMLDivElement>
 >(({ className, ...props }, ref) => (
   <div
-    ref={ref}
     className={cn("ui-flex ui-flex-col ui-space-y-1.5 ui-p-6", className)}
+    ref={ref}
     {...props}
   />
 ))
@@ -46,8 +45,8 @@ const CardDescription = React.forwardRef<
   React.HTMLAttributes<HTMLParagraphElement>
 >(({ className, ...props }, ref) => (
   <p
-    ref={ref}
     className={cn("ui-text-sm ui-text-muted-foreground", className)}
+    ref={ref}
     {...props}
   />
 ))
@@ -57,7 +56,7 @@ const CardContent = React.forwardRef<
   HTMLDivElement,
   React.HTMLAttributes<HTMLDivElement>
 >(({ className, ...props }, ref) => (
-  <div ref={ref} className={cn("ui-p-6 ui-pt-0", className)} {...props} />
+  <div className={cn("ui-p-6 ui-pt-0", className)} ref={ref} {...props} />
 ))
 CardContent.displayName = "CardContent"
 
@@ -66,8 +65,8 @@ const CardFooter = React.forwardRef<
   React.HTMLAttributes<HTMLDivElement>
 >(({ className, ...props }, ref) => (
   <div
-    ref={ref}
     className={cn("ui-flex ui-items-center ui-p-6 ui-pt-0", className)}
+    ref={ref}
     {...props}
   />
 ))
