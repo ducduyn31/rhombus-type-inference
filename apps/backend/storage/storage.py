@@ -1,8 +1,11 @@
+from io import BytesIO
+
+
 class AbstractStorageAdapter:
     def generate_upload_url(self, filename: str) -> str:
         raise NotImplementedError
 
-    def download_file(self, filename: str) -> bytes:
+    def download_file(self, filename: str) -> BytesIO:
         raise NotImplementedError
 
     def download_partial_file(self, filename: str, start: int, end: int) -> bytes:
@@ -21,7 +24,7 @@ class StorageService:
     def get_presigned_url(self, filename: str) -> str:
         return self.adapter.generate_upload_url(filename)
 
-    def download_file(self, filename: str) -> bytes:
+    def download_file(self, filename: str) -> BytesIO:
         return self.adapter.download_file(filename)
 
     def download_partial_file(self, filename: str, start: int, end: int) -> bytes:

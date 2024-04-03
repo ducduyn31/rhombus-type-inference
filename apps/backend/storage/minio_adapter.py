@@ -1,4 +1,5 @@
 from datetime import timedelta
+from io import BytesIO
 from urllib.parse import urlparse
 
 from minio import Minio
@@ -29,14 +30,14 @@ class MinioStorageAdapter(AbstractStorageAdapter):
         return f"{parsed_url.path}?{parsed_url.query}"
 
 
-    def download_file(self, filename: str) -> bytes:
+    def download_file(self, filename: str) -> BytesIO:
         response = None
         try:
             response = self.minio_client.get_object(
                 bucket_name=self.bucket_name,
                 object_name=filename
             )
-            file_buffer = response.read()
+            return response.stream()
         finally:
             response.close()
             response.release_conn()

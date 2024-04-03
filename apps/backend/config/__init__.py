@@ -18,10 +18,19 @@ STORAGE_ADAPTERS = {
             'bucket_name': BUCKET_NAME,
             'expires_in_seconds': UPLOAD_EXPIRES
         }
+    },
+    "AwsStorageAdapter": {
+        "kwargs": {
+            "endpoint": "http://" + MINIO_SERVER_HOST + ":9000",
+            "access_key": MINIO_SERVER_ACCESS_KEY,
+            "secret_key": MINIO_SERVER_ACCESS_SECRET_KEY,
+            "bucket_name": BUCKET_NAME,
+            "expires_in_seconds": UPLOAD_EXPIRES,
+        }
     }
 }
 
-PREFERRED_STORAGE_ADAPTER = 'MinioStorageAdapter'
+PREFERRED_STORAGE_ADAPTER = 'AwsStorageAdapter'
 
 # Broker Config
 BROKER_HOST = os.getenv('APP_BROKER_HOST', 'localhost')

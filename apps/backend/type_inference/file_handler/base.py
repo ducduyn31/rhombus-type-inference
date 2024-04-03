@@ -1,0 +1,2 @@
+class BaseFileHandler:
+    source: str

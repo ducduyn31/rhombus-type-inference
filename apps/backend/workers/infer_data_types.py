@@ -24,11 +24,7 @@ def infer_and_convert_data_types(df):
 
     return df
 
+
 @app.task
-def infer_data_types(session_id, name, row_count=1000, offset=0):
-    #TODO figure out a way not to load the whole file into memory
-    filebuffer = storage_service.download_file(file_path)
-
-    df = pd.read_csv(filebuffer, nrows=row_count, skiprows=offset)
-
-
+def infer_data_types(session_id, row_count=1000, offset=0, **kwargs):
+    print(session_id)

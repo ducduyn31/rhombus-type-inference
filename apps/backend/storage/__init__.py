@@ -1,10 +1,12 @@
 from config import STORAGE_ADAPTERS, PREFERRED_STORAGE_ADAPTER
+from .aws_adapter import AwsStorageAdapter
 
 from .storage import StorageService as _StorageService
 from .minio_adapter import MinioStorageAdapter
 
 _adapters = [
-    MinioStorageAdapter
+    MinioStorageAdapter,
+    AwsStorageAdapter,
 ]
 
 
