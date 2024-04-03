@@ -3,7 +3,7 @@ FROM python:3.11-bookworm as basepython
 ARG POETRY_DIR
 
 RUN apt-get update && apt-get install -y bash gcc git  \
-    libcurl4-openssl-dev libc-dev libpq-dev \
+    libcurl4-openssl-dev libc-dev libpq-dev openssh-server \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
@@ -36,8 +36,12 @@ COPY --from=builder $VIRTUAL_ENV $VIRTUAL_ENV
 
 COPY configs/.pg_service.conf configs/.pgpass /root/
 
+COPY apps/backend/scripts/entrypoint.sh /entrypoint.sh
+
 WORKDIR /app
 
 COPY --from=builder /app .
 
-CMD poetry run python manage.py runserver
+ENTRYPOINT ["/entrypoint.sh"]
+
+CMD poetry run manage.py runserver

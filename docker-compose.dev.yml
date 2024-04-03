@@ -10,10 +10,21 @@ x-defaults:
 services:
   backend:
     <<: *defaults
-    command: poetry run python manage.py runserver
+    command: scripts/run_dev_server.sh
     build:
       context: .
       dockerfile: ./apps/backend/dev.Dockerfile
+    environment:
+      APP_ROOT_PASSWORD: password
+      APP_MINIO_SERVER_HOST: storage
+      APP_MINIO_SERVER_ACCESS_KEY: minio
+      APP_MINIO_SERVER_ACCESS_SECRET_KEY: miniosecret
+      APP_BROKER_HOST: task-broker
+      APP_BROKER_USER: rhombus
+      APP_BROKER_PASSWORD: password
+      APP_BUCKET_NAME: rhombus
+    ports:
+      - "2222:22"
     volumes:
       - ./apps/backend:/app
     depends_on:
@@ -47,13 +58,26 @@ services:
     <<: *defaults
     image: bitnami/minio
     ports:
+      - "19000:9000"
       - "9001:9001"
     restart: always
     environment:
       MINIO_ROOT_USER: minio
       MINIO_ROOT_PASSWORD: miniosecret
+      MINIO_DEFAULT_BUCKETS: rhombus
     volumes:
       - storage-data:/data
+  storage-configure:
+    <<: *defaults
+    build:
+        context: ./configs
+        dockerfile: ./mc.Dockerfile
+    environment:
+      MINIO_SERVER_HOST: storage
+      MINIO_SERVER_ACCESS_KEY: minio
+      MINIO_SERVER_ACCESS_SECRET_KEY: miniosecret
+    depends_on:
+      - storage
   gateway:
     <<: *defaults
     image: nginx
@@ -65,7 +89,14 @@ services:
       - web
       - backend
       - storage
-
+  task-broker:
+    <<: *defaults
+    image: bitnami/rabbitmq
+    ports:
+      - 15672:15672
+    volumes:
+      - rabbitmq_data:/bitnami/rabbitmq/mnesia
+      - ./configs/rabbitmq.conf:/opt/bitnami/rabbitmq/etc/rabbitmq/rabbitmq.conf
 networks:
   rhombus-net:
     driver: bridge
@@ -73,4 +104,5 @@ networks:
 volumes:
   db-data:
   storage-data:
+  rabbitmq_data:
 

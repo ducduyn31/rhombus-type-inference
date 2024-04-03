@@ -1,7 +1,7 @@
-import type { StorybookConfig } from "@storybook/react-vite";
+import type {StorybookConfig} from "@storybook/react-vite";
 import tsconfigPaths from "vite-tsconfig-paths";
 
-import { join, dirname } from "path";
+import {dirname, join} from "path";
 
 /**
  * This function is used to resolve the absolute path of a package.
@@ -10,8 +10,12 @@ import { join, dirname } from "path";
 function getAbsolutePath(value: string): any {
   return dirname(require.resolve(join(value, "package.json")));
 }
+
 const config: StorybookConfig = {
-  stories: ["../stories/**/*.mdx", "../stories/**/*.stories.@(js|jsx|mjs|ts|tsx)"],
+  stories: [
+    "../stories/**/*.stories.@(js|jsx|mjs|ts|tsx)",
+    "../../../packages/ui/src/components/**/*.stories.@(js|jsx|mjs|ts|tsx)",
+  ],
   addons: [
     getAbsolutePath("@storybook/addon-onboarding"),
     getAbsolutePath("@storybook/addon-links"),
@@ -28,26 +32,23 @@ const config: StorybookConfig = {
   },
   core: {},
 
-  async viteFinal(config, { configType }) {
-    return {
-      ...config,
-      define: { "process.env": {} },
-      build: {
+  async viteFinal(config, {configType}) {
+    const {mergeConfig} = await import("vite");
 
-      },
+    return mergeConfig(config, {
+      define: {"process.env": {}},
       plugins: [tsconfigPaths()],
       resolve: {
-        ...config.resolve,
         alias: [
-          {
-            find: "ui",
-            replacement: join(__dirname, "../../../packages/ui/"),
-          }
+          // {
+          //   find: "ui",
+          //   replacement: join(__dirname, "../../../packages/ui/"),
+          // }
         ],
       },
-    }
+    });
   },
 
-  staticDirs: ["../public"],
+  staticDirs: ["../public", "../storybook-static"],
 };
 export default config;

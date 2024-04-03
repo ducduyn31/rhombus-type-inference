@@ -1,0 +1,19 @@
+from config import STORAGE_ADAPTERS, PREFERRED_STORAGE_ADAPTER
+
+from .storage import StorageService as _StorageService
+from .minio_adapter import MinioStorageAdapter
+
+_adapters = [
+    MinioStorageAdapter
+]
+
+
+def get_storage_adapter():
+    adapter = STORAGE_ADAPTERS[PREFERRED_STORAGE_ADAPTER]
+    for a in _adapters:
+        if a.__name__ == PREFERRED_STORAGE_ADAPTER:
+            return a(**adapter['kwargs'])
+    return MinioStorageAdapter(**adapter['kwargs'])
+
+
+StorageService = _StorageService(adapter=get_storage_adapter())
