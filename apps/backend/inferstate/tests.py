@@ -51,7 +51,9 @@ class InferStateTestCase(TestCase):
 
     @tag('skip_setup')
     @patch("infer_sessions.models.InferSession.objects.get")
-    def test_machine_can_be_loaded_with_state(self, mocked_get):
+    @patch("inferstate.callbacks_manager.callback_manager.execute_callbacks")
+    def test_machine_can_be_loaded_with_state(self, mocked_get, mocked_execute_callbacks):
+        mocked_execute_callbacks.return_value = None
         mocked_get.return_value = InferSession()
         machine = InferSessionProcess(session_id=self.session_id, state=InferStates.FILE_UPLOADED)
         machine.next()
