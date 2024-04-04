@@ -1,4 +1,12 @@
+from inferstate import callback, InferStates
 
+
+@callback(states=[
+    InferStates.GENERATE_PRESIGNED_URL,
+    InferStates.FILE_UPLOADED,
+    InferStates.VALIDATE_FILE,
+    InferStates.INFER_FILE,
+])
 def save_model_on_state_updated(session_machine, *args, **kwargs):
     from infer_sessions.models import InferSession
 
@@ -12,6 +20,8 @@ def save_model_on_state_updated(session_machine, *args, **kwargs):
 
     model.save()
 
+
+@callback(states=[InferStates.FILE_UPLOADED])
 def move_next_state_automatically(session_machine, *args, **kwargs):
     from infer_sessions.models import InferSession
 
@@ -19,13 +29,17 @@ def move_next_state_automatically(session_machine, *args, **kwargs):
     if not model:
         return
     process = model.to_infer_session_process()
-    process.trigger("next",)
+    process.trigger("next", )
 
+
+@callback(states=[InferStates.VALIDATE_FILE])
 def dispatch_workers_to_validate_file(session_machine, *args, **kwargs):
     from workers.file_validate import validate_file
 
     validate_file.delay(str(session_machine.session_id), *args, **kwargs)
 
+
+@callback(states=[InferStates.INFER_FILE])
 def dispatch_workers_to_infer_types(session_machine, *args, **kwargs):
     from workers.infer_data_types import infer_data_types
 

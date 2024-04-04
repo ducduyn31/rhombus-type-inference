@@ -1,6 +1,7 @@
 import pandas as pd
-from storage import StorageService as storage_service
+
 from workers.worker_app import app
+from type_inference.file_handler import CsvFileHandler
 
 
 def infer_and_convert_data_types(df):
@@ -24,7 +25,23 @@ def infer_and_convert_data_types(df):
 
     return df
 
+file_handlers = {
+    "text/csv": CsvFileHandler,
+}
 
 @app.task
 def infer_data_types(session_id, row_count=1000, offset=0, **kwargs):
-    print(session_id)
+    from infer_sessions.models import InferSession
+    session = InferSession.objects.filter(pk=session_id).first()
+
+    if not session:
+        return
+
+    mime_type = session.result.get("mime_type")
+
+    for allowed_mime_type in file_handlers:
+        if allowed_mime_type == mime_type:
+            file_handler = file_handlers[allowed_mime_type](source=session.file)
+            file_handler.handle()
+            break
+

@@ -1,5 +1,6 @@
 from collections import defaultdict
 
+
 class StateChangeCallbackManager:
     def __init__(self):
         self.callbacks = defaultdict(list)
@@ -18,7 +19,19 @@ class StateChangeCallbackManager:
 
 callback_manager = StateChangeCallbackManager()
 
-def register_for_states(states, callbacks):
-    for state in states:
-        for callback in callbacks:
-            callback_manager.register(state, callback)
+
+def callback(states=None, without=None):
+    """a decorator to register a callback for a state"""
+
+    def decorator(fn):
+        from .state_machine import States
+        register_states = set(States) if states is None else set(states)
+        if without:
+            register_states = register_states - set(without)
+
+        for state in register_states:
+            callback_manager.register(state, fn)
+
+        return fn
+
+    return decorator
