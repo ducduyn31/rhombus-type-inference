@@ -1,6 +1,11 @@
+from unittest.mock import patch
+
 import requests
 from rest_framework.test import APITestCase, APIClient
 from config import MINIO_SERVER_HOST
+from inferstate import InferStates
+from workers.file_validate import validate_file
+from workers.infer_data_types import infer_data_types
 
 
 class FileInferTest(APITestCase):
@@ -36,9 +41,64 @@ class FileInferTest(APITestCase):
 
         return response.data["data"]
 
-    def test_infer_types_should_return_type_of_file(self):
+    def infer_type_from_header(self, name):
+        names_to_types = {
+            "id": "integer",
+            "name": "string",
+            "non_standard_date": "date",
+            "email": "string",
+            "mixed_names_with_nulls": "string",
+            "mixed_dates_with_nulls": "date",
+            "very_large_number": "integer",
+            "category": "category",
+        }
+
+    @patch('workers.file_validate.validate_file.delay', side_effect=validate_file)
+    @patch('workers.infer_data_types.infer_data_types.delay', side_effect=infer_data_types)
+    def test_infer_types_should_return_type_of_file(self, _1, mocked_infer_data_types):
         data = self.upload_file_from_assets('sample_data.csv')
         session_id = data["session_id"]
+        mocked_infer_data_types.assert_called_with(session_id)
         response = self.client.get(f'/api/sessions/{session_id}/')
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.data["data"]["state"], "infer_file")
+        self.assertEqual(InferStates.SUCCESS, response.data["data"]["state"])
+
+    @patch('workers.file_validate.validate_file.delay', side_effect=validate_file)
+    @patch('workers.infer_data_types.infer_data_types.delay', side_effect=infer_data_types)
+    def test_infer_types_of_large_file_should_return_type_of_file(self, _1, mocked_infer_data_types):
+        data = self.upload_file_from_assets('large_file.csv')
+        session_id = data["session_id"]
+        mocked_infer_data_types.assert_called_with(session_id)
+        response = self.client.get(f'/api/sessions/{session_id}/')
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(InferStates.SUCCESS, response.data["data"]["state"])
+
+    @patch('workers.file_validate.validate_file.delay', side_effect=validate_file)
+    @patch('workers.infer_data_types.infer_data_types.delay', side_effect=infer_data_types)
+    def test_infer_types_of_test_1_should_return_type_of_file(self, _1, mocked_infer_data_types):
+        data = self.upload_file_from_assets('test_1.csv')
+        session_id = data["session_id"]
+        mocked_infer_data_types.assert_called_with(session_id)
+        response = self.client.get(f'/api/sessions/{session_id}/')
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(InferStates.SUCCESS, response.data["data"]["state"])
+
+    @patch('workers.file_validate.validate_file.delay', side_effect=validate_file)
+    @patch('workers.infer_data_types.infer_data_types.delay', side_effect=infer_data_types)
+    def test_infer_types_of_test_2_should_return_type_of_file(self, _1, mocked_infer_data_types):
+        data = self.upload_file_from_assets('test_2.csv')
+        session_id = data["session_id"]
+        mocked_infer_data_types.assert_called_with(session_id)
+        response = self.client.get(f'/api/sessions/{session_id}/')
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(InferStates.SUCCESS, response.data["data"]["state"])
+
+    @patch('workers.file_validate.validate_file.delay', side_effect=validate_file)
+    @patch('workers.infer_data_types.infer_data_types.delay', side_effect=infer_data_types)
+    def test_infer_types_of_test_13_should_return_type_of_file(self, _1, mocked_infer_data_types):
+        data = self.upload_file_from_assets('test_13.csv')
+        session_id = data["session_id"]
+        mocked_infer_data_types.assert_called_with(session_id)
+        response = self.client.get(f'/api/sessions/{session_id}/')
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(InferStates.SUCCESS, response.data["data"]["state"])

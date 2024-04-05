@@ -1,3 +1,5 @@
+from unittest.mock import patch
+
 import requests
 from rest_framework.test import APITestCase, APIClient
 
@@ -14,7 +16,7 @@ class FileValidationTest(APITestCase):
 
     def upload_file_from_assets(self, file_name):
         # Create a session
-        response = self.client.post('/api/sessions/' )
+        response = self.client.post('/api/sessions/')
         session_id = response.data["data"]["session_id"]
         self.assertEqual(response.status_code, 201)
         # Generate upload link
@@ -39,20 +41,21 @@ class FileValidationTest(APITestCase):
 
         return response.data["data"]
 
-    def test_file_validation_should_return_true_for_valid_file_with_eager_load(self):
+    @patch('workers.file_validate.validate_file.delay', side_effect=validate_file)
+    @patch('workers.infer_data_types.infer_data_types')
+    def test_file_validation_should_return_true_for_valid_file_with_eager_load(self, _1, _2):
         data = self.upload_file_from_assets('sample_data.csv')
         session_id = data["session_id"]
-        result = validate_file(session_id)
-        self.assertTrue(result)
-
         response = self.client.get(f'/api/sessions/{session_id}/')
         self.assertEqual(response.status_code, 200)
         self.assertEqual(InferStates.INFER_FILE, response.data["data"]["state"])
 
-
-    def test_file_validation_should_return_false_for_invalid_file_with_eager_load(self):
+    @patch('workers.file_validate.validate_file.delay', side_effect=validate_file)
+    @patch('workers.infer_data_types.infer_data_types')
+    def test_file_validation_should_return_false_for_invalid_file_with_eager_load(self, _1, _2):
         data = self.upload_file_from_assets('not_a_valid_file.csv')
-        result = validate_file(data["session_id"])
-        self.assertFalse(result)
+        session_id = data["session_id"]
 
-
+        response = self.client.get(f'/api/sessions/{session_id}/')
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(InferStates.ERROR, response.data["data"]["state"])

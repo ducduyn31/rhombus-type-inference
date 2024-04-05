@@ -1,12 +1,7 @@
 from inferstate import callback, InferStates
 
 
-@callback(states=[
-    InferStates.GENERATE_PRESIGNED_URL,
-    InferStates.FILE_UPLOADED,
-    InferStates.VALIDATE_FILE,
-    InferStates.INFER_FILE,
-])
+@callback()
 def save_model_on_state_updated(session_machine, *args, **kwargs):
     from infer_sessions.models import InferSession
 

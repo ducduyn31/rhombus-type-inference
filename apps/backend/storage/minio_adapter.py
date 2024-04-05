@@ -29,7 +29,6 @@ class MinioStorageAdapter(AbstractStorageAdapter):
         parsed_url = urlparse(full_url)
         return f"{parsed_url.path}?{parsed_url.query}"
 
-
     def download_file(self, filename: str) -> BytesIO:
         response = None
         try:
@@ -37,14 +36,12 @@ class MinioStorageAdapter(AbstractStorageAdapter):
                 bucket_name=self.bucket_name,
                 object_name=filename
             )
-            return response.stream()
+            return BytesIO(response.read())
         finally:
             response.close()
             response.release_conn()
 
-        return file_buffer
-
-    def download_partial_file(self, filename: str, start: int, end: int) -> bytes:
+    def download_partial_file(self, filename: str, start: int, end: int) -> BytesIO:
         response = None
         try:
             response = self.minio_client.get_object(
@@ -53,12 +50,11 @@ class MinioStorageAdapter(AbstractStorageAdapter):
                 offset=start,
                 length=end - start
             )
-            file_buffer = response.read()
+            return BytesIO(response.read())
         finally:
             response.close()
             response.release_conn()
 
-        return file_buffer
 
     def upload_file(self, filename: str, file):
         self.minio_client.put_object(
@@ -85,3 +81,10 @@ class MinioStorageAdapter(AbstractStorageAdapter):
         m = magic.Magic(mime=True)
         mimetype = m.from_buffer(filebuffer)
         return mimetype
+
+    def get_file_size(self, filename: str) -> int:
+        response = self.minio_client.stat_object(
+            bucket_name=self.bucket_name,
+            object_name=filename
+        )
+        return response.size

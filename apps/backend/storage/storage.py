@@ -8,13 +8,16 @@ class AbstractStorageAdapter:
     def download_file(self, filename: str) -> BytesIO:
         raise NotImplementedError
 
-    def download_partial_file(self, filename: str, start: int, end: int) -> bytes:
+    def download_partial_file(self, filename: str, start: int, end: int) -> BytesIO:
         raise NotImplementedError
 
     def upload_file(self, filename: str, file):
         raise NotImplementedError
 
     def get_mimetype(self, filename: str) -> str:
+        raise NotImplementedError
+
+    def get_file_size(self, filename: str) -> int:
         raise NotImplementedError
 
 class StorageService:
@@ -35,3 +38,6 @@ class StorageService:
 
     def get_mimetype(self, filename: str) -> str:
         return self.adapter.get_mimetype(filename)
+
+    def get_file_size(self, filename: str) -> int:
+        return self.adapter.get_file_size(filename)

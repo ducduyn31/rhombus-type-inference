@@ -33,12 +33,12 @@ class AwsStorageAdapter(AbstractStorageAdapter):
 
     def download_file(self, filename: str) -> BytesIO:
         response = self.client.get_object(Bucket=self.bucket_name, Key=filename)
-        return response['Body'].read()
+        return response['Body']
 
 
-    def download_partial_file(self, filename: str, start: int, end: int) -> bytes:
+    def download_partial_file(self, filename: str, start: int, end: int) -> BytesIO:
         response = self.client.get_object(Bucket=self.bucket_name, Key=filename, Range=f"bytes={start}-{end}")
-        return response['Body'].read()
+        return response['Body']
 
     def upload_file(self, filename: str, file):
         self.client.upload_fileobj(file, self.bucket_name, filename)
@@ -48,4 +48,8 @@ class AwsStorageAdapter(AbstractStorageAdapter):
 
         m = magic.Magic(mime=True)
         return m.from_buffer(response['Body'].read(100))
+
+    def get_file_size(self, filename: str) -> int:
+        response = self.client.head_object(Bucket=self.bucket_name, Key=filename)
+        return response['ContentLength']
 
