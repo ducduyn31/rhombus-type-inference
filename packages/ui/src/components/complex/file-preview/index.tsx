@@ -1,8 +1,9 @@
-import type {FC} from "react";
+import type {ReactElement} from "react";
 import {lazy} from "react";
 import {CheckCircledIcon, TrashIcon} from "@radix-ui/react-icons";
 import {Card} from "../../ui/card";
 import {Progress} from "../../ui/progress";
+import {convertBytesToReadable} from "../utils/strings.ts";
 
 const ExcelIcon = lazy(() => import("../../icons/excel-icon")
   .then((module) => ({default: module.ExcelIcon})));
@@ -16,23 +17,15 @@ interface FilePreviewProps {
   onRemove?: () => void;
 }
 
-const FilePreview: FC<FilePreviewProps> = ({
-                                             file,
-                                             uploadProgress,
-                                             state = "none",
-                                             onRemove
-                                           }) => {
+function FilePreview({
+                       file,
+                       uploadProgress,
+                       state = "none",
+                       onRemove
+                     }: FilePreviewProps): ReactElement {
   const fileType = file?.type;
   const isExcel = fileType === "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" ||
     fileType === "application/vnd.ms-excel";
-
-  const convertBytesToReadable = (bytes: number): string => {
-    if (bytes === 0) return "0 Bytes";
-    const k = 1024;
-    const sizes = ["Bytes", "KB", "MB", "GB", "TB"];
-    const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return `${parseFloat((bytes / Math.pow(k, i)).toFixed(2))} ${sizes[i]}`;
-  }
 
   const title = (): string => {
     if (state === "none") {

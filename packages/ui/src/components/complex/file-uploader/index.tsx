@@ -1,39 +1,52 @@
 "use client"
 
-import type { HTMLAttributes} from "react";
-import {forwardRef, useRef} from "react";
+import type {HTMLAttributes} from "react";
 import * as React from "react";
+import {forwardRef, useRef} from "react";
 import type {ClassValue} from "clsx";
 import {cn} from "@repo/ui/utils";
 import {FileUploaderProvider, useFileUploader} from "@ui/components/complex/file-uploader/context.tsx";
+import {convertBytesToReadable} from "@ui/components/complex/utils/strings.ts";
 import {UploadIcon} from "../../icons/upload-icon";
 import {Label} from "../../ui/label.tsx";
 
 interface FileUploaderProps extends HTMLAttributes<HTMLInputElement> {
   size: 'small' | 'medium' | 'large';
-  onFileChange?: (file: File) => void;
   accept?: string;
+  supportedFormats?: string;
+  maxFileSize?: number;
 }
 
 const FileUploader = forwardRef<
   HTMLInputElement,
   FileUploaderProps
->(({size, ...rest}, ref) => {
+>(({size, maxFileSize, supportedFormats, ...rest}, forwardedRef) => {
 
   const localRef = useRef<HTMLInputElement | null>(null);
 
   const assignRef = (inp: HTMLInputElement | null): void => {
-    if (ref) {
-      (ref as { current: HTMLInputElement | null }).current = inp;
-      return;
-    }
     localRef.current = inp;
-  }
+    if (forwardedRef) {
+      if (typeof forwardedRef === "function") {
+        forwardedRef(inp);
+      } else {
+        forwardedRef.current = inp;
+      }
+    }
+  };
 
   return (
-    <FileUploaderProvider inputRef={ref || localRef}>
-      <input ref={assignRef} type="file" {...rest} className="ui-hidden" hidden/>
+    <FileUploaderProvider inputRef={localRef}>
+      <input {...rest} className="ui-hidden" hidden ref={assignRef} type="file"/>
       <FileDropZone size={size} title={rest.title}/>
+      {
+        size === "large" && (
+          <div className="flex justify-between text-slate-400">
+            {supportedFormats ? <Label>Supported formats: {supportedFormats}</Label> : null}
+            {maxFileSize ? <Label>Maximum size: {convertBytesToReadable(maxFileSize)}</Label> : null}
+          </div>
+        )
+      }
     </FileUploaderProvider>);
 });
 
@@ -41,7 +54,7 @@ const FileDropZone = React.forwardRef<
   HTMLDivElement,
   HTMLAttributes<HTMLDivElement> & { size: 'small' | 'medium' | 'large' }
 >((props, ref) => {
-  const { triggerFileSelect } = useFileUploader();
+  const {triggerFileSelect} = useFileUploader();
 
   const sizeToClass: Record<string, ClassValue> = {
     small: "",
@@ -61,7 +74,8 @@ const FileDropZone = React.forwardRef<
       {props.size === "large" && <UploadIcon className="ui-h-16 ui-w-16"/>}
       <span>
         <Label className="ui-text-xl">Drag and Drop file here or </Label>
-        <Label className="ui-text-xl ui-font-bold ui-underline" onClick={triggerFileSelect} type="link">Choose file</Label>
+        <Label className="ui-text-xl ui-font-bold ui-underline" onClick={triggerFileSelect}
+               type="link">Choose file</Label>
       </span>
     </div>
   );
