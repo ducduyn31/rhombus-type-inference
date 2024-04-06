@@ -4,7 +4,10 @@ import type { Config } from "tailwindcss";
 import sharedConfig from "@repo/tailwind-config";
 
 const config: Pick<Config, "content" | "presets" | "prefix"> = {
-  content: ["./src/app/**/*.tsx"],
+  content: [
+    "./stories/**/*.tsx",
+    "../../packages/ui/src/**/*.tsx",
+  ],
   presets: [sharedConfig],
   prefix: "ui-",
 };

@@ -18,3 +18,5 @@ You can start editing the page by modifying `src/app/page.tsx`. The page auto-up
 
 When you open the app, you will see a form to upload a csv or excel file.
 After uploading the file, the app will display the data in a table.
+
+## Tech stack

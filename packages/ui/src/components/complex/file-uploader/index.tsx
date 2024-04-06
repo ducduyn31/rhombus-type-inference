@@ -1,31 +1,48 @@
-import type {HTMLAttributes} from "react";
+"use client"
+
+import type { HTMLAttributes} from "react";
+import {forwardRef, useRef} from "react";
 import * as React from "react";
 import type {ClassValue} from "clsx";
 import {cn} from "@repo/ui/utils";
+import {FileUploaderProvider, useFileUploader} from "@ui/components/complex/file-uploader/context.tsx";
 import {UploadIcon} from "../../icons/upload-icon";
 import {Label} from "../../ui/label.tsx";
 
 interface FileUploaderProps extends HTMLAttributes<HTMLInputElement> {
   size: 'small' | 'medium' | 'large';
   onFileChange?: (file: File) => void;
+  accept?: string;
 }
 
-const FileUploader = React.forwardRef<
+const FileUploader = forwardRef<
   HTMLInputElement,
   FileUploaderProps
 >(({size, ...rest}, ref) => {
 
+  const localRef = useRef<HTMLInputElement | null>(null);
+
+  const assignRef = (inp: HTMLInputElement | null): void => {
+    if (ref) {
+      (ref as { current: HTMLInputElement | null }).current = inp;
+      return;
+    }
+    localRef.current = inp;
+  }
+
   return (
-    <>
-      <input ref={ref} type="file" {...rest} className="ui-hidden" hidden/>
+    <FileUploaderProvider inputRef={ref || localRef}>
+      <input ref={assignRef} type="file" {...rest} className="ui-hidden" hidden/>
       <FileDropZone size={size} title={rest.title}/>
-    </>);
+    </FileUploaderProvider>);
 });
 
 const FileDropZone = React.forwardRef<
   HTMLDivElement,
   HTMLAttributes<HTMLDivElement> & { size: 'small' | 'medium' | 'large' }
 >((props, ref) => {
+  const { triggerFileSelect } = useFileUploader();
+
   const sizeToClass: Record<string, ClassValue> = {
     small: "",
     medium: "ui-h-32",
@@ -39,14 +56,12 @@ const FileDropZone = React.forwardRef<
       "ui-transition ui-duration-150 ui-ease-in-out",
       "ui-bg-secondary",
       sizeToClass[props.size],
-      // "ui-flex ui-justify-center ui-items-center ui-text-gray-400 ui-text-sm",
-      // "ui-font-medium ui-bg-gray-50 ui-transition ui-duration-150 ui-ease-in-out",
       props.className
     )}>
       {props.size === "large" && <UploadIcon className="ui-h-16 ui-w-16"/>}
       <span>
         <Label className="ui-text-xl">Drag and Drop file here or </Label>
-        <Label className="ui-text-xl ui-font-bold ui-underline" type="link">Choose file</Label>
+        <Label className="ui-text-xl ui-font-bold ui-underline" onClick={triggerFileSelect} type="link">Choose file</Label>
       </span>
     </div>
   );
