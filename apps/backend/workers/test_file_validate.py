@@ -16,11 +16,11 @@ class FileValidationTest(APITestCase):
 
     def upload_file_from_assets(self, file_name):
         # Create a session
-        response = self.client.post('/api/sessions/')
+        response = self.client.post('/sessions/')
         session_id = response.data["data"]["session_id"]
         self.assertEqual(response.status_code, 201)
         # Generate upload link
-        response = self.client.put(f'/api/sessions/{session_id}/', data={
+        response = self.client.put(f'/sessions/{session_id}/', data={
             "state": "generate_presigned_url"
         })
         self.assertEqual(response.status_code, 200)
@@ -33,7 +33,7 @@ class FileValidationTest(APITestCase):
 
         self.assertEqual(response.status_code, 200)
 
-        response = self.client.put(f'/api/sessions/{session_id}/', data={
+        response = self.client.put(f'/sessions/{session_id}/', data={
             "state": "file_uploaded"
         })
         self.assertEqual(response.status_code, 200)
@@ -46,7 +46,7 @@ class FileValidationTest(APITestCase):
     def test_file_validation_should_return_true_for_valid_file_with_eager_load(self, _1, _2):
         data = self.upload_file_from_assets('sample_data.csv')
         session_id = data["session_id"]
-        response = self.client.get(f'/api/sessions/{session_id}/')
+        response = self.client.get(f'/sessions/{session_id}/')
         self.assertEqual(response.status_code, 200)
         self.assertEqual(InferStates.INFER_FILE, response.data["data"]["state"])
 
@@ -56,6 +56,16 @@ class FileValidationTest(APITestCase):
         data = self.upload_file_from_assets('not_a_valid_file.csv')
         session_id = data["session_id"]
 
-        response = self.client.get(f'/api/sessions/{session_id}/')
+        response = self.client.get(f'/sessions/{session_id}/')
         self.assertEqual(response.status_code, 200)
         self.assertEqual(InferStates.ERROR, response.data["data"]["state"])
+        self.assertEqual("Invalid file type", response.data["error"]["message"])
+
+    @patch('workers.file_validate.validate_file.delay', side_effect=validate_file)
+    @patch('workers.infer_data_types.infer_data_types')
+    def test_file_validation_should_return_true_for_valid_but_mismatched_mimetype_file_with_eager_load(self, _1, _2):
+        data = self.upload_file_from_assets('test_4.csv')
+        session_id = data["session_id"]
+        response = self.client.get(f'/sessions/{session_id}/')
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(InferStates.INFER_FILE, response.data["data"]["state"])

@@ -1,10 +1,10 @@
 from io import BytesIO
+from urllib.parse import urlparse
 
+import boto3
 import magic
 
 from storage.storage import AbstractStorageAdapter
-import boto3
-from urllib.parse import urlparse
 
 
 class AwsStorageAdapter(AbstractStorageAdapter):
@@ -14,11 +14,12 @@ class AwsStorageAdapter(AbstractStorageAdapter):
             endpoint_url=endpoint,
             aws_access_key_id=access_key,
             aws_secret_access_key=secret_key,
+            config=boto3.session.Config(signature_version='s3v4')
         )
         self.bucket_name = bucket_name
         self.expires_in_seconds = expires_in_seconds
 
-    def generate_upload_url(self, filename: str) -> str:
+    def generate_upload_url(self, filename: str, get_full_url= False) -> str:
         full_url = self.client.generate_presigned_url(
             'put_object',
             Params={
@@ -27,6 +28,25 @@ class AwsStorageAdapter(AbstractStorageAdapter):
             },
             ExpiresIn=self.expires_in_seconds
         )
+
+        if get_full_url:
+            return full_url
+
+        parsed_url = urlparse(full_url)
+        return f"{parsed_url.path}?{parsed_url.query}"
+
+    def generate_get_url(self, filename: str, get_full_url = False) -> str:
+        full_url = self.client.generate_presigned_url(
+            'get_object',
+            Params={
+                'Bucket': self.bucket_name,
+                'Key': filename,
+            },
+            ExpiresIn=self.expires_in_seconds
+        )
+
+        if get_full_url:
+            return full_url
 
         parsed_url = urlparse(full_url)
         return f"{parsed_url.path}?{parsed_url.query}"

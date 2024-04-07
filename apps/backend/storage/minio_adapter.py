@@ -19,12 +19,28 @@ class MinioStorageAdapter(AbstractStorageAdapter):
         self.bucket_name = bucket_name
         self.expires_in_seconds = expires_in_seconds
 
-    def generate_upload_url(self, filename: str) -> str:
+    def generate_upload_url(self, filename: str, get_full_url= False) -> str:
         full_url = self.minio_client.presigned_put_object(
             bucket_name=self.bucket_name,
             object_name=filename,
             expires=timedelta(seconds=self.expires_in_seconds)
         )
+
+        if get_full_url:
+            return full_url
+
+        parsed_url = urlparse(full_url)
+        return f"{parsed_url.path}?{parsed_url.query}"
+
+    def generate_get_url(self, filename: str, get_full_url= False) -> str:
+        full_url = self.minio_client.presigned_get_object(
+            bucket_name=self.bucket_name,
+            object_name=filename,
+            expires=timedelta(seconds=self.expires_in_seconds)
+        )
+
+        if get_full_url:
+            return full_url
 
         parsed_url = urlparse(full_url)
         return f"{parsed_url.path}?{parsed_url.query}"

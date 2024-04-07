@@ -4,6 +4,7 @@ import pandas as pd
 
 from storage import StorageService as storage_service
 from .base import BaseFileHandler
+from ..infer import infer_type_of_col
 
 
 class ExcelHandler(BaseFileHandler):
@@ -21,4 +22,5 @@ class ExcelHandler(BaseFileHandler):
         df = pd.read_excel(file_io)
 
         for col in df.columns:
-            self.columns_dtypes[col].add(df[col].dtype)
+            t = infer_type_of_col(df[col], threshold='auto')
+            self.columns_dtypes[col].add(t)

@@ -31,6 +31,16 @@ setup_minio() {
 
   mc anonymous set private $ALIAS/$BUCKET_NAME
   echo "Bucket $BUCKET_NAME is now private"
+
+  if ! mc event ls $ALIAS/$BUCKET_NAME | grep -q webhook1 &>/dev/null 2>&1; then
+    echo "Webhook webhook1 not set for bucket $BUCKET_NAME"
+    mc admin config set $ALIAS notify_webhook:webhook1 endpoint="${WEBHOOK_URL}"
+    mc admin service restart $ALIAS
+    mc event add $ALIAS/$BUCKET_NAME arn:minio:sqs::webhook1:webhook --event put
+    echo "Webhook $WEBHOOK_URL set for bucket $BUCKET_NAME"
+  else
+      echo "Webhook webhook1 already set for bucket $BUCKET_NAME"
+  fi
 }
 
 setup_minio

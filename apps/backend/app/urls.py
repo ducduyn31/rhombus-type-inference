@@ -14,9 +14,11 @@ Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
-from django.contrib import admin
 from django.urls import path, include
+import django_eventstream
 
 urlpatterns = [
-    path('api/', include('infer_sessions.urls')),
+    path('sessions/', include('infer_sessions.urls')),
+    path('events/<str:id>/', include(django_eventstream.urls), {'format-channels': ['session-{id}']}),
+    path('webhooks/', include('webhook.urls')),
 ]

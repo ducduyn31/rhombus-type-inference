@@ -5,6 +5,7 @@ broker_url = f"pyamqp://{_user}:{_password}@{_host}:{_port}//"
 imports = (
     'workers.file_validate',
     'workers.infer_data_types',
+    'type_inference.tasks',
 )
 
 enable_utc = True

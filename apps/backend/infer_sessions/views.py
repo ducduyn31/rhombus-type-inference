@@ -40,7 +40,7 @@ class InferSessionViewSet(viewsets.ModelViewSet):
         if error_message:
             return error_message
 
-        content = InferSessionUpdateSerializer(data=request.data, context={"session": session})
+        content = InferSessionUpdateSerializer(data=request.data, context={"session": session, "request": request})
 
         if not content.is_valid():
             return self._build_response(
@@ -84,12 +84,24 @@ class InferSessionViewSet(viewsets.ModelViewSet):
 
     def _build_response(self, status_code, session=None, data=None, message=None, description=None):
         response_data = dict()
+        code = status_code
+
+        response_error = dict(
+            code=code,
+            description=description,
+        )
 
         if session:
             serializer = self.get_serializer(session)
             result = serializer.data["result"]
+            session_error = serializer.data["error"]
             if result:
                 response_data.update(result)
+            if session_error:
+                response_error.update(session_error)
+                if session_error.get("code"):
+                    code = session_error["code"]
+                    message = session_error["message"]
             response_data.update(dict(session_id=f"{session.pk}", state=f"{session.state}"))
 
         if data:
@@ -98,19 +110,15 @@ class InferSessionViewSet(viewsets.ModelViewSet):
         default_message = {
             status.HTTP_201_CREATED: 'Session created',
             status.HTTP_200_OK: 'Request successful',
+            status.HTTP_400_BAD_REQUEST: 'Bad request',
         }
 
-        if not message and status.is_success(status_code):
-            message = default_message[status_code]
-
-        error = dict(
-            code=status_code,
-            description=description,
-        )
+        if not message:
+            message = default_message[code]
 
         response = dict(
             message=message,
-            error=error if not status.is_success(status_code) else None,
+            error=response_error if not status.is_success(code) else None,
             data=response_data,
         )
 

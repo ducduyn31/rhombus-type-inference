@@ -1,4 +1,5 @@
 from pandas.errors import ParserError
+from celery.utils.log import get_task_logger
 
 from infer_sessions.models import InferSession
 from storage import StorageService as storage_service
@@ -10,6 +11,8 @@ ALLOWED_MIME_TYPES = [
     'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
 ]
 
+logger = get_task_logger(__name__)
+
 def try_reading_some_data_in_csv(filename):
     try:
         import pandas as pd
@@ -20,8 +23,9 @@ def try_reading_some_data_in_csv(filename):
             if chunk.dtypes is not None:
                 return True
             break
-
-    except ParserError:
+        return False
+    except ParserError as e:
+        logger.error(f"Error while reading CSV {filename}: {e}")
         return False
 
 
@@ -43,9 +47,15 @@ def validate_file(session_id):
         })
         process.trigger("next", result=result)
     else:
-        process.trigger("error")
+        err = {
+            "code": 400,
+            "message": "Invalid file type",
+            "mime_type": mime_type,
+        }
+        process.trigger("error", error=err)
+        return False
 
-    return is_valid
+    return True
 
 def is_valid_mime(filename):
     mime_type = storage_service.get_mimetype(filename=filename)

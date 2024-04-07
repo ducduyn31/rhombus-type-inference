@@ -1,33 +1,10 @@
-import pandas as pd
-
-from workers.worker_app import app
 from type_inference.file_handler import CsvFileHandler
-
-
-def infer_and_convert_data_types(df):
-    for col in df.columns:
-        # Attempt to convert to numeric first
-        df_converted = pd.to_numeric(df[col], errors='coerce')
-        if not df_converted.isna().all():  # If at least one value is numeric
-            df[col] = df_converted
-            continue
-
-        # Attempt to convert to datetime
-        try:
-            df[col] = pd.to_datetime(df[col])
-            continue
-        except (ValueError, TypeError):
-            pass
-
-        # Check if the column should be categorical
-        if len(df[col].unique()) / len(df[col]) < 0.5:  # Example threshold for categorization
-            df[col] = pd.Categorical(df[col])
-
-    return df
+from workers.worker_app import app
 
 file_handlers = {
     "text/csv": CsvFileHandler,
 }
+
 
 @app.task
 def infer_data_types(session_id, **kwargs):
@@ -40,11 +17,22 @@ def infer_data_types(session_id, **kwargs):
     mime_type = session.result.get("mime_type")
 
     result = session.result
+    process = session.to_infer_session_process()
 
     for allowed_mime_type in file_handlers:
         if allowed_mime_type == mime_type:
             file_handler = file_handlers[allowed_mime_type](source=session.file)
-            file_handler.handle()
+            try:
+                file_handler.handle()
+            except Exception as e:
+                err = {
+                    "code": 400,
+                    "message": type(e).__name__,
+                    "description": str(e)
+                }
+                process.trigger("error", error=err)
+                return
+
             result.update({
                 "columns_dtypes": {
                     col_name: str(list(dtypes)[0]) for col_name, dtypes in file_handler.columns_dtypes.items()
@@ -52,6 +40,4 @@ def infer_data_types(session_id, **kwargs):
             })
             break
 
-    process = session.to_infer_session_process()
     process.trigger('next', result=result)
-

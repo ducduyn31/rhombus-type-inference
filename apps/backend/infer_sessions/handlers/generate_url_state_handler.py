@@ -23,8 +23,11 @@ class GenerateUrlStateHandler(BaseHandler):
         # Regenerate the presigned URL
         if model.state == data["state"] == InferStates.GENERATE_PRESIGNED_URL:
             today = datetime.now().strftime("%Y-%m-%d")
+            # origin_filename = data.get("filename", ".csv")
+            # preferred_extension = origin_filename.split(".")[-1]
+            # filename = f"{today}/{model.pk}.{preferred_extension}"
             filename = f"{today}/{model.pk}"
-            updated_url = self.storage_service.get_presigned_url(filename=filename)
+            updated_url = self.storage_service.generate_upload_url(filename=filename)
             result = {
                 "upload_url": updated_url,
             }

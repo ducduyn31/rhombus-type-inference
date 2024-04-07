@@ -25,7 +25,10 @@ SECRET_KEY = "django-insecure-!9ta*p=ns6b5=ki$p9hm7mz-b+9-ic57@li1=70jlaocenni!5
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = [
+    "localhost",
+    "backend",
+]
 
 
 # Application definition
@@ -33,19 +36,18 @@ ALLOWED_HOSTS = []
 INSTALLED_APPS = [
     "infer_sessions",
     "inferstate",
+    "webhook",
     "workers",
     "rest_framework",
     "auditlog",
-    "django.contrib.admin",
-    "django.contrib.auth",
+    "django_eventstream",
     "django.contrib.contenttypes",
-    "django.contrib.sessions",
-    "django.contrib.messages",
-    "django.contrib.staticfiles",
+    "django.contrib.auth",
 ]
 inferstate.autodiscover_callbacks(INSTALLED_APPS)
 
 MIDDLEWARE = [
+    "django_grip.GripMiddleware",
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
@@ -54,6 +56,8 @@ MIDDLEWARE = [
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
+
+GRIP_URL = "http://sse-stream:5561"
 
 ROOT_URLCONF = "app.urls"
 
