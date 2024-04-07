@@ -7,30 +7,41 @@ x-defaults:
   networks:
     - rhombus-net
 
-services:
-  backend:
+x-backend:
+    &backend
     <<: *defaults
-    command: scripts/run_dev_server.sh
     build:
-      context: .
-      dockerfile: ./apps/backend/dev.Dockerfile
+        context: .
+        dockerfile: ./apps/backend/dev.Dockerfile
     restart: always
     environment:
-      APP_ROOT_PASSWORD: password
-      APP_MINIO_SERVER_HOST: storage
-      APP_MINIO_SERVER_ACCESS_KEY: minio
-      APP_MINIO_SERVER_ACCESS_SECRET_KEY: miniosecret
-      APP_BROKER_HOST: task-broker
-      APP_BROKER_USER: rhombus
-      APP_BROKER_PASSWORD: password
-      APP_BUCKET_NAME: rhombus
+        APP_ROOT_PASSWORD: password
+        APP_MINIO_SERVER_HOST: storage
+        APP_MINIO_SERVER_ACCESS_KEY: minio
+        APP_MINIO_SERVER_ACCESS_SECRET_KEY: miniosecret
+        APP_BROKER_HOST: task-broker
+        APP_BROKER_USER: rhombus
+        APP_BROKER_PASSWORD: password
+        APP_BUCKET_NAME: rhombus
+    volumes:
+        - ./apps/backend:/app
+
+services:
+  backend:
+    <<: *backend
+    command: scripts/run_dev_server.sh
     ports:
       - "2222:22"
-    volumes:
-      - ./apps/backend:/app
     depends_on:
       - db
       - storage
+  workers:
+    <<: *backend
+    command: scripts/run_workers.sh
+    depends_on:
+      - db
+      - storage
+      - backend
   web:
     <<: *defaults
     command: pnpm --filter web dev
