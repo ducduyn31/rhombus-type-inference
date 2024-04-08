@@ -2,6 +2,7 @@ import "./globals.css";
 import "@repo/ui/styles.css";
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
+import type {FC, PropsWithChildren} from "react";
 import React from "react";
 
 const inter = Inter({ subsets: ["latin"] });
@@ -11,14 +12,14 @@ export const metadata: Metadata = {
   description: "Infer types from csv and excel files",
 };
 
-export default function RootLayout({
+const RootLayout: FC<PropsWithChildren> = ({
   children,
-}: {
-  children: React.ReactNode;
-}): React.ReactElement {
+}) => {
   return (
     <html lang="en">
       <body className={inter.className}>{children}</body>
     </html>
   );
 }
+
+export default RootLayout;

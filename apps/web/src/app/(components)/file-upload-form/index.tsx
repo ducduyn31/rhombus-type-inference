@@ -1,7 +1,7 @@
 "use client"
 import {Button, FilePreview, FileUploader, Label} from "@repo/ui/components";
-import type {FC, ReactNode} from "react";
-import React, { useCallback,useEffect} from "react";
+import type {FC} from "react";
+import React, {useCallback, useEffect} from "react";
 import {Controller, FormProvider, useForm, useFormContext} from "react-hook-form";
 import {zodResolver} from "@hookform/resolvers/zod";
 import {toast} from "sonner";
@@ -60,7 +60,7 @@ export const UploadForm: FC = () => {
   )
 }
 
-function SelectFileForm(): ReactNode {
+const SelectFileForm: FC = () => {
 
   const methods = useFormContext<FormType>();
 

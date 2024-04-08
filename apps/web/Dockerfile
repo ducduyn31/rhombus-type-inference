@@ -1,4 +1,4 @@
-FROM node:20.2-alpine AS base
+FROM node:20.5-alpine AS base
 
 
 FROM base AS builder
@@ -9,7 +9,7 @@ RUN apk update
 
 WORKDIR /app
 
-RUN yarn global add turbo
+RUN npm install -g turbo
 
 COPY . .
 
@@ -23,19 +23,20 @@ RUN apk update
 
 WORKDIR /app
 
-COPY .gitignore .gitignore
-
 COPY --from=builder /app/out/json/ .
 
-COPY --from=builder /app/out/yarn.lock ./yarn.lock
+COPY --from=builder /app/out/pnpm-lock.yaml ./pnpm-lock.yaml
 
-RUN yarn install
+RUN corepack enable
 
 COPY --from=builder /app/out/full/ .
 
 COPY turbo.json turbo.json
 
-RUN yarn turbo build --filter=web...
+RUN --mount=type=cache,id=pnpm,target=/pnpm/store,sharing=locked \
+    pnpm install --frozen-lockfile
+
+RUN pnpm dlx turbo run build --filter=web
 
 FROM base AS runner
 

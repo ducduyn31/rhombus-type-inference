@@ -1,10 +1,11 @@
+import type {FC} from "react";
 import React from "react";
 import {Card, Toaster} from "@repo/ui/components";
 import {UploadForm} from "./(components)/file-upload-form";
 import {TypeDisplay} from "./(components)/type-displayer";
 import {InferenceContextProvider} from "./(api)/inference-context";
 
-export default function Page(): React.ReactElement {
+const Page: FC = () => {
   return (
     <main className="flex flex-col items-center justify-between min-h-screen p-24">
       <InferenceContextProvider>
@@ -17,3 +18,5 @@ export default function Page(): React.ReactElement {
     </main>
   );
 }
+
+export default Page;

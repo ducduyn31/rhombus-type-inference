@@ -41,5 +41,7 @@ module.exports = {
   // add rules configurations here
   rules: {
     "import/no-default-export": "off",
+    "react/function-component-definition": ["warn", { namedComponents: "arrow-function" }],
+    "@typescript-eslint/no-misused-promises": "off",
   },
 };
