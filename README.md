@@ -4,6 +4,8 @@ This is a project is used for Rhombus AI Technology Assessment round. The target
 that can infer the data types of the given data (CSV, Excel). The system is built to ensure scalability,
 reliability, and maintainability. For more details, please check the [System Design](docs/pages/system-design.md) page.
 
+![](docs/assets/demo.gif)
+
 ## Prerequisites
 - [Docker](https://docs.docker.com/get-docker/)
 - [Docker Compose](https://docs.docker.com/compose/install/)
