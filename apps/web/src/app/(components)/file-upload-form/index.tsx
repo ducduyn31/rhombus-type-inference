@@ -1,15 +1,21 @@
 "use client"
-import {Button, Card, FilePreview, FileUploader, Label} from "@ui/components";
-import type {ReactElement, ReactNode} from "react";
-import React from "react";
+import {Button, FilePreview, FileUploader, Label} from "@repo/ui/components";
+import type {FC, ReactNode} from "react";
+import React, { useCallback,useEffect} from "react";
 import {Controller, FormProvider, useForm, useFormContext} from "react-hook-form";
 import {zodResolver} from "@hookform/resolvers/zod";
+import {toast} from "sonner";
+import {useInference} from "../../(api)/inference-context";
 import type {FormType} from "./forms";
 import {FormSchema} from "./forms";
 
 type Optional<T> = T | null | undefined;
 
-function UploadForm(): ReactElement {
+export const UploadForm: FC = () => {
+
+  const inferFile = useInference((state) => state.inferFile);
+  const currentState = useInference((state) => state.currentState);
+  const loading = useInference((state) => state.loading);
 
   const methods = useForm<FormType>({
     resolver: zodResolver(FormSchema),
@@ -17,22 +23,39 @@ function UploadForm(): ReactElement {
 
   const selectedFile = methods.watch("file") as Optional<File>;
 
-  const resetForm = (): void => {
+  const resetForm = useCallback((): void => {
     methods.setValue("file", undefined);
     void methods.trigger("file");
+  }, [methods])
+
+  useEffect(() => {
+    if (currentState === "error") {
+      toast.error("An error occurred while processing the file");
+    } else if (currentState === "success") {
+      toast.success(currentState as string);
+    } else if (currentState === "idle") {
+      resetForm();
+    }
+  }, [currentState, resetForm])
+
+  if (currentState === "success") {
+    return null;
+  }
+
+  const handleSubmit = async (data: FormType): Promise<void> => {
+    if (!data.file) return;
+    await inferFile(data.file)
   }
 
   return (
     <FormProvider {...methods}>
-      <Card className="w-full p-24">
-        <form className="flex flex-col gap-y-5">
-          <SelectFileForm/>
-          {selectedFile ? <FilePreview file={selectedFile} onRemove={resetForm}/> : null}
-          {methods.formState.isValid ? <div className="flex justify-end">
-              <Button className="max-w-64 min-w-40" type="submit">Upload</Button>
-            </div> : null}
-        </form>
-      </Card>
+      <form className="flex flex-col gap-y-5" onSubmit={methods.handleSubmit(handleSubmit)}>
+        <SelectFileForm/>
+        {selectedFile ? <FilePreview file={selectedFile} onRemove={resetForm}/> : null}
+        {methods.formState.isValid ? <div className="flex justify-end">
+          <Button className="max-w-64 min-w-40" disabled={loading} type="submit">{loading ? "Please Wait" : "Upload"}</Button>
+        </div> : null}
+      </form>
     </FormProvider>
   )
 }
@@ -68,5 +91,3 @@ function SelectFileForm(): ReactNode {
     </>
   )
 }
-
-export {UploadForm}

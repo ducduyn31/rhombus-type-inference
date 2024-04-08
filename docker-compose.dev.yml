@@ -42,6 +42,7 @@ services:
       - db
       - storage
       - backend
+      - task-broker
   web:
     <<: *defaults
     command: pnpm --filter web dev

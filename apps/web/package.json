@@ -12,10 +12,13 @@
   "dependencies": {
     "@hookform/resolvers": "^3.3.4",
     "@repo/ui": "workspace:*",
+    "axios": "^1.6.8",
+    "immer": "^10.0.4",
     "next": "^14.1.1",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-hook-form": "^7.51.2",
+    "sonner": "^1.4.41",
     "zod": "^3.22.4",
     "zustand": "^4.5.2"
   },

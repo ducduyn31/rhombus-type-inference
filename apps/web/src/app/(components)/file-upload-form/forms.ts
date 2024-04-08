@@ -19,7 +19,9 @@ const FormSchema: ZodType = z.object({
   ),
 });
 
-type FormType = z.infer<typeof FormSchema>;
+interface FormType {
+  file?: File;
+}
 
 export {FormSchema};
 export type {FormType};
