@@ -14,7 +14,13 @@ class CategoricalConvertStrategy(BaseConvertStrategy):
         self.data = filter_na(data)
 
     def is_applicable(self) -> bool:
-        return self.data.dtype == "object" and len(self.data.unique()) / len(self.data) < self.threshold
+        if len(self.data.unique()) > 50:
+            return False
+        try:
+            pd.to_datetime(self.data)
+            return False
+        except:
+            return self.data.dtype == "object" and len(self.data.unique()) / len(self.data) < self.threshold
 
     def should_convert(self) -> (float, bool):
         rows = len(self.data)

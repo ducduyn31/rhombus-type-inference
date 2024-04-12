@@ -55,16 +55,16 @@ retry_5_times() {
   local attempts=0
 
   until (( attempts >= 5 )); do
-    sleep 5
     attempts=$((attempts + 1))
     if "$@"; then
       return
     fi
     echo "Command '$@' failed. Retrying (attempt $attempts)..."
+    sleep 5
   done
 
   echo "Command '$@' failed after 5 attempts" >&2
-  exit
+  exit 1
 }
 
 setup_minio

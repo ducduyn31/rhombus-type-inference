@@ -104,3 +104,15 @@ class MinioStorageAdapter(AbstractStorageAdapter):
             object_name=filename
         )
         return response.size
+
+    def list_file(self):
+        objects = self.minio_client.list_objects(
+            bucket_name=self.bucket_name
+        )
+        return [obj.object_name for obj in objects]
+
+    def delete_file(self, filename: str):
+        self.minio_client.remove_object(
+            bucket_name=self.bucket_name,
+            object_name=filename
+       )

@@ -37,7 +37,7 @@ services:
       - storage
   workers:
     <<: *backend
-    command: scripts/run_workers.sh
+    command: scripts/run_workers_dev.sh
     depends_on:
       - db
       - storage
@@ -72,8 +72,7 @@ services:
     <<: *defaults
     image: bitnami/minio
     ports:
-      - "19000:9000"
-      - "9001:9001"
+      - "19001:9001"
     restart: always
     environment:
       MINIO_ROOT_USER: minio
@@ -117,7 +116,7 @@ services:
     image: bitnami/rabbitmq
     restart: always
     ports:
-      - 15672:15672
+      - "15673:15672"
     volumes:
       - rabbitmq_data:/bitnami/rabbitmq/mnesia
       - ./configs/rabbitmq.conf:/opt/bitnami/rabbitmq/etc/rabbitmq/rabbitmq.conf

@@ -1,4 +1,5 @@
 from io import BytesIO
+from typing import List
 
 
 class AbstractStorageAdapter:
@@ -21,6 +22,12 @@ class AbstractStorageAdapter:
         raise NotImplementedError
 
     def get_file_size(self, filename: str) -> int:
+        raise NotImplementedError
+
+    def list_file(self) -> List:
+        raise NotImplementedError
+
+    def delete_file(self, filename: str):
         raise NotImplementedError
 
 class StorageService:
@@ -47,3 +54,9 @@ class StorageService:
 
     def get_file_size(self, filename: str) -> int:
         return self.adapter.get_file_size(filename)
+
+    def list_file(self) -> List:
+        return self.adapter.list_file()
+
+    def delete_file(self, filename: str):
+        return self.adapter.delete_file(filename)
