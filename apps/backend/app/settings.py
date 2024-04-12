@@ -37,6 +37,7 @@ INSTALLED_APPS = [
     "infer_sessions",
     "inferstate",
     "webhook",
+    "type_inference",
     "workers",
     "rest_framework",
     "auditlog",

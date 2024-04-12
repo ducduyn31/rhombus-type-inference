@@ -7,5 +7,5 @@ ALL_STRATEGIES = [
     BooleanConvertStrategy,
     NumericConvertStrategy,
     CategoricalConvertStrategy,
-    DatetimeConvertStrategy,
+    # DatetimeConvertStrategy,
 ]

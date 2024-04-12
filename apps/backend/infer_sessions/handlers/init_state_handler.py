@@ -1,4 +1,3 @@
-import uuid
 from datetime import datetime
 
 from rest_framework import status
@@ -21,8 +20,6 @@ class InitStateHandler(BaseHandler):
         :param data: Serialized request from users
         """
         today = datetime.now().strftime("%Y-%m-%d")
-        # origin_filename = data.get("filename", ".csv")
-        # preferred_extension = origin_filename.split(".")[-1]
         filename = f"{today}/{model.session_id}"
         presigned_url = self.storage_service.generate_upload_url(filename=filename)
         process = model.to_infer_session_process()

@@ -1,4 +1,8 @@
+import logging
 from collections import defaultdict
+
+from celery import group
+from celery.utils.log import get_task_logger
 
 from .base import BaseFileHandler
 from storage import StorageService as storage_service
@@ -6,10 +10,12 @@ import pandas as pd
 from ..infer import infer_type_of_col
 from ..tasks import infer_data_types_of_chunk
 
+logger = get_task_logger(__name__)
+
 
 class CsvFileHandler(BaseFileHandler):
     FIFTY_MB = 50 * 1024 * 1024
-    CHUNK_SIZE = 300_000
+    CHUNK_SIZE = 100_000
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -33,11 +39,23 @@ class CsvFileHandler(BaseFileHandler):
 
     def _read_file_in_chunks(self, file_io):
         iterator = pd.read_csv(file_io, iterator=True, chunksize=self.CHUNK_SIZE)
-        part_number = 0
+        count = 0
+        logger.debug("Reading file in chunks")
         for _ in iterator:
-            types = infer_data_types_of_chunk.delay(source=self.source, part_number=part_number, chunk_size=self.CHUNK_SIZE)
-            for col in types:
-                self.columns_dtypes[col].add(types[col])
-            #TODO Break the loop for now, remove this line when the task is implemented
-            part_number += 1
-            break
+            count += 1
+            logger.debug(f"Chunk {count} read")
+        iterator.close()
+
+        logger.debug(f"Total chunks: {count}")
+
+        g = group(infer_data_types_of_chunk.s(
+            source=self.source,
+            part_number=i,
+            chunk_size=self.CHUNK_SIZE,
+            retries=3,
+        ) for i in range(count))
+
+        result = g().get()
+        for res in result:
+            for col, t in res.items():
+                self.columns_dtypes[col].add(t)

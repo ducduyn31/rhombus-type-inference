@@ -7,8 +7,8 @@ from ..utils import filter_na
 
 
 class BooleanConvertStrategy(BaseConvertStrategy):
-    TRUTHY_VALUES = ["true", "t", "yes", "y", "1", 1]
-    FALSY_VALUES = ["false", "f", "no", "n", "0", 0, np.nan]
+    TRUTHY_VALUES = ["true", "t", "yes", "y", "1"]
+    FALSY_VALUES = ["false", "f", "no", "n", "0", "nan"]
     converted = None
 
     def __init__(self, data, threshold=0.8):
@@ -28,9 +28,9 @@ class BooleanConvertStrategy(BaseConvertStrategy):
             return 1.0
 
         def convert_bool(x):
-            if x in self.TRUTHY_VALUES:
+            if str(x).lower() in self.TRUTHY_VALUES:
                 return True
-            if x in self.FALSY_VALUES:
+            if str(x).lower() in self.FALSY_VALUES:
                 return False
             return np.nan
 

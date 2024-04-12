@@ -73,3 +73,12 @@ class AwsStorageAdapter(AbstractStorageAdapter):
         response = self.client.head_object(Bucket=self.bucket_name, Key=filename)
         return response['ContentLength']
 
+    def list_file(self):
+        response = self.client.list_objects(Bucket=self.bucket_name)
+        if 'Contents' not in response:
+            return []
+        contents = response['Contents']
+        return [content['Key'] for content in contents]
+
+    def delete_file(self, filename: str):
+        self.client.delete_object(Bucket=self.bucket_name, Key=filename)

@@ -29,6 +29,7 @@ celery = {extras = ["pytest"], version = "^5.3.6"}
 pytest = "^8.1.1"
 requests = "^2.31.0"
 faker = "^24.4.0"
+watchdog = "^4.0.0"
 
 [build-system]
 requires = ["poetry-core"]

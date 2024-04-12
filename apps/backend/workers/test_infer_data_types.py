@@ -2,11 +2,12 @@ from unittest.mock import patch
 
 import requests
 from rest_framework.test import APITestCase, APIClient
+
 from config import MINIO_SERVER_HOST
 from inferstate import InferStates
+from type_inference.tasks import infer_data_types_of_chunk
 from workers.file_validate import validate_file
 from workers.infer_data_types import infer_data_types
-from type_inference.tasks import infer_data_types_of_chunk
 
 
 class FileInferTest(APITestCase):
@@ -14,10 +15,9 @@ class FileInferTest(APITestCase):
         self.client = APIClient()
         self.storage_host = f"http://{MINIO_SERVER_HOST}:9000"
 
-
     def upload_file_from_assets(self, file_name):
         # Create a session
-        response = self.client.post('/sessions/' )
+        response = self.client.post('/sessions/')
         session_id = response.data["data"]["session_id"]
         self.assertEqual(response.status_code, 201)
         # Generate upload link
