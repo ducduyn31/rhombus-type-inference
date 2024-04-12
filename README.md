@@ -21,13 +21,15 @@ The following are optional if you want to run the project locally:
 Run the following command in the root:
 
 ```sh
-docker-compose up -f docker-compose.demo.yml
+docker-compose -f docker-compose.demo.yml up
 ```
 
+**NOTE**: make sure there is no build cache from the previous run, You can run the clean up script below to remove the cache.
 
 For cleaning up the demo run:
 ```sh
-docker-compose down -f docker-compose.demo.yml
+docker-compose -f docker-compose.demo.yml down --volumes
+docker image rm $(docker image ls --filter reference="rhombus-type-inference*" --format '{{.Repository}}:{{.Tag}}')
 ```
 
 ## What's inside?
@@ -56,7 +58,7 @@ There are two ways to start the development environment:
 To start the development environment using Docker Compose, run the following command in the root:
 
 ```sh
-docker-compose up -f docker-compose.dev.yml
+docker-compose -f docker-compose.dev.yml up
 ```
 
 **Note**: An ssh server is already setup in backend service, so you can connect to the Python environment using Pycharm and all the dependencies are already installed.
