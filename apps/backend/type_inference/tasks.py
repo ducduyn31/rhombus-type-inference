@@ -9,7 +9,9 @@ from workers.worker_app import app
 
 logger = get_task_logger(__name__)
 
-@app.task
+@app.task(
+    reject_on_worker_lost=True,
+)
 def infer_data_types_of_chunk(source, part_number, chunk_size, **kwargs):
     file_io = storage_service.download_file(filename=source)
     result = {}
@@ -23,10 +25,8 @@ def infer_data_types_of_chunk(source, part_number, chunk_size, **kwargs):
             chunk_skip += 1
             part_number -= 1
 
-    logger.debug(f"Inferring data types of chunk {part_number} of {source}: Memory usage: {chunk.memory_usage().sum() / 1024 ** 2:.2f} MB")
-
     for col in chunk.columns:
         t = infer_type_of_col(chunk[col], threshold='auto')
-        result[col] = t
+        result[col] = str(t)
 
     return result

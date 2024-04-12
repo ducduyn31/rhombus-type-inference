@@ -42,6 +42,7 @@ interface InferState {
   loading: boolean;
   sessionId: string | null;
   uploadUrl: string | null;
+  error: ResponseError | null;
   sse: EventSource | null;
   result: Record<string, string> | null;
   inferFile: (file: File) => Promise<void>;

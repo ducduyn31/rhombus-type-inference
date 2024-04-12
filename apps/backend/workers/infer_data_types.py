@@ -1,8 +1,10 @@
-from type_inference.file_handler import CsvFileHandler
+from type_inference.file_handler import CsvFileHandler, ExcelFileHandler
 from workers.worker_app import app
 
 file_handlers = {
     "text/csv": CsvFileHandler,
+    "application/vnd.ms-excel": ExcelFileHandler,
+    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": ExcelFileHandler,
 }
 
 
@@ -16,12 +18,11 @@ def infer_data_types(session_id, **kwargs):
 
     mime_type = session.result.get("mime_type")
 
-    result = session.result
     process = session.to_infer_session_process()
 
     for allowed_mime_type in file_handlers:
         if allowed_mime_type == mime_type:
-            file_handler = file_handlers[allowed_mime_type](source=session.file)
+            file_handler = file_handlers[allowed_mime_type](source=session.file, session_id=session_id)
             try:
                 file_handler.handle()
             except Exception as e:
@@ -32,12 +33,4 @@ def infer_data_types(session_id, **kwargs):
                 }
                 process.trigger("error", error=err)
                 return
-
-            result.update({
-                "columns_dtypes": {
-                    col_name: str(list(dtypes)[0]) for col_name, dtypes in file_handler.columns_dtypes.items()
-                }
-            })
             break
-
-    process.trigger('next', result=result)

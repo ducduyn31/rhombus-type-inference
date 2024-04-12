@@ -18,7 +18,7 @@ def infer_type_of_col(col: pd.Series, threshold=0.8) -> np.dtype:
         if strategy_name == DatetimeConvertStrategy.__name__:  # Skip DateConvertStrategy
             continue
         try_strategy(strategy, threshold, candidates)
-        if candidates[-1].get_compatibilities() == 1.0:
+        if candidates and candidates[-1].get_compatibilities() == 1.0:
             break
 
     # Try datetime strategy if no other strategy is applicable
@@ -37,6 +37,7 @@ def infer_type_of_col(col: pd.Series, threshold=0.8) -> np.dtype:
 
 
 def try_strategy(strategy, threshold, result_queue, ignore_threshold=False):
+    logger.debug(f"Trying strategy {strategy.__class__.__name__}")
     try:
         if strategy.is_applicable() and (strategy.get_compatibilities() >= threshold or ignore_threshold):
             result_queue.append(strategy)

@@ -49,4 +49,4 @@ def dispatch_workers_to_validate_file(session_machine, *args, **kwargs):
 def dispatch_workers_to_infer_types(session_machine, *args, **kwargs):
     from workers.infer_data_types import infer_data_types
 
-    infer_data_types.delay(str(session_machine.session_id), *args, **kwargs)
+    infer_data_types.delay(str(session_machine.session_id), reject_on_worker_lost=True, *args, **kwargs)

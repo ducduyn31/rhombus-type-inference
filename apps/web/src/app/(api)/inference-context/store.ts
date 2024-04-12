@@ -8,6 +8,7 @@ export const inferStore = createStore<InferState>((set, get) => ({
   sessionId: null,
   uploadUrl: null,
   result: null,
+  error: null,
   sse: null,
   inferFile: async (file: File) => {
     // Create Session
@@ -21,6 +22,6 @@ export const inferStore = createStore<InferState>((set, get) => ({
   },
   reset: () => {
     get().sse?.close();
-    set({currentState: "idle", loading: false, sessionId: null, uploadUrl: null, result: null, sse: null});
+    set({currentState: "idle", loading: false, sessionId: null, uploadUrl: null, result: null, error: null, sse: null});
   }
 }));

@@ -1,12 +1,13 @@
-import logging
+import gc
 from collections import defaultdict
 
-from celery import group
+import pandas as pd
+from celery import chord
 from celery.utils.log import get_task_logger
 
-from .base import BaseFileHandler
 from storage import StorageService as storage_service
-import pandas as pd
+from workers.persist_infer_results import persist_results
+from .base import BaseFileHandler
 from ..infer import infer_type_of_col
 from ..tasks import infer_data_types_of_chunk
 
@@ -19,7 +20,6 @@ class CsvFileHandler(BaseFileHandler):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.columns_dtypes = defaultdict(set)
 
     def handle(self, *args, **kwargs):
         file_size = storage_service.get_file_size(filename=self.source)
@@ -32,10 +32,14 @@ class CsvFileHandler(BaseFileHandler):
 
     def _read_entire_file(self, file_io):
         df = pd.read_csv(file_io)
+        logger.debug("Reading entire file")
+        result = defaultdict(set)
 
         for col in df.columns:
             t = infer_type_of_col(df[col], threshold='auto')
-            self.columns_dtypes[col].add(t)
+            result[col].add(str(t))
+        result = {k: list(v) for k, v in result.items()}
+        persist_results.delay(result, self.entity_id)
 
     def _read_file_in_chunks(self, file_io):
         iterator = pd.read_csv(file_io, iterator=True, chunksize=self.CHUNK_SIZE)
@@ -44,18 +48,16 @@ class CsvFileHandler(BaseFileHandler):
         for _ in iterator:
             count += 1
             logger.debug(f"Chunk {count} read")
+            gc.collect()
         iterator.close()
 
         logger.debug(f"Total chunks: {count}")
 
-        g = group(infer_data_types_of_chunk.s(
+        chord(infer_data_types_of_chunk.s(
             source=self.source,
             part_number=i,
             chunk_size=self.CHUNK_SIZE,
+            reject_on_worker_lost=True,
             retries=3,
-        ) for i in range(count))
-
-        result = g().get()
-        for res in result:
-            for col, t in res.items():
-                self.columns_dtypes[col].add(t)
+        ) for i in range(count))(persist_results.s(self.entity_id))
+        logger.debug("Chord created")

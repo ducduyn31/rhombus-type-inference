@@ -33,6 +33,8 @@ services:
     depends_on:
       - db
       - storage
+      - result-backend
+      - sse-stream
   workers:
     <<: *backend
     command: scripts/run_workers.sh
@@ -41,6 +43,16 @@ services:
       - storage
       - backend
       - task-broker
+      - result-backend
+      - sse-stream
+  result-backend:
+    <<: *defaults
+    image: bitnami/redis
+    restart: always
+    environment:
+      ALLOW_EMPTY_PASSWORD: "yes"
+    volumes:
+      - redis_data:/data
   web:
     <<: *defaults
     build:
@@ -117,4 +129,5 @@ volumes:
   db-data:
   storage-data:
   rabbitmq_data:
+  redis_data:
 

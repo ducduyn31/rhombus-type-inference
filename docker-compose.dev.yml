@@ -8,23 +8,23 @@ x-defaults:
     - rhombus-net
 
 x-backend:
-    &backend
-    <<: *defaults
-    build:
-        context: .
-        dockerfile: ./apps/backend/dev.Dockerfile
-    restart: always
-    environment:
-        APP_ROOT_PASSWORD: password
-        APP_MINIO_SERVER_HOST: storage
-        APP_MINIO_SERVER_ACCESS_KEY: minio
-        APP_MINIO_SERVER_ACCESS_SECRET_KEY: miniosecret
-        APP_BROKER_HOST: task-broker
-        APP_BROKER_USER: rhombus
-        APP_BROKER_PASSWORD: password
-        APP_BUCKET_NAME: rhombus
-    volumes:
-        - ./apps/backend:/app
+  &backend
+  <<: *defaults
+  build:
+    context: .
+    dockerfile: ./apps/backend/dev.Dockerfile
+  restart: always
+  environment:
+    APP_ROOT_PASSWORD: password
+    APP_MINIO_SERVER_HOST: storage
+    APP_MINIO_SERVER_ACCESS_KEY: minio
+    APP_MINIO_SERVER_ACCESS_SECRET_KEY: miniosecret
+    APP_BROKER_HOST: task-broker
+    APP_BROKER_USER: rhombus
+    APP_BROKER_PASSWORD: password
+    APP_BUCKET_NAME: rhombus
+  volumes:
+    - ./apps/backend:/app
 
 services:
   backend:
@@ -35,6 +35,8 @@ services:
     depends_on:
       - db
       - storage
+      - result-backend
+      - sse-stream
   workers:
     <<: *backend
     command: scripts/run_workers_dev.sh
@@ -43,6 +45,25 @@ services:
       - storage
       - backend
       - task-broker
+      - result-backend
+      - sse-stream
+  result-backend:
+    <<: *defaults
+    image: bitnami/redis
+    restart: always
+    environment:
+      ALLOW_EMPTY_PASSWORD: "yes"
+    volumes:
+      - redis_data:/data
+  flower:
+    <<: *defaults
+    image: mher/flower
+    restart: always
+    ports:
+      - "5555:5555"
+    environment:
+      CELERY_BROKER_URL: amqp://rhombus:password@task-broker:5672//
+      CELERY_RESULT_BACKEND: redis://result-backend:6379/0
   web:
     <<: *defaults
     command: pnpm --filter web dev
@@ -83,8 +104,8 @@ services:
   storage-configure:
     <<: *defaults
     build:
-        context: ./configs
-        dockerfile: ./mc.Dockerfile
+      context: ./configs
+      dockerfile: ./mc.Dockerfile
     environment:
       MINIO_SERVER_HOST: storage
       MINIO_SERVER_ACCESS_KEY: minio
@@ -99,7 +120,7 @@ services:
     ports:
       - "8888:80"
     volumes:
-        - ./configs/nginx.conf:/etc/nginx/conf.d/default.conf
+      - ./configs/nginx.conf:/etc/nginx/conf.d/default.conf
     depends_on:
       - web
       - backend
@@ -128,4 +149,5 @@ volumes:
   db-data:
   storage-data:
   rabbitmq_data:
+  redis_data:
 

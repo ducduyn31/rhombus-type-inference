@@ -30,6 +30,7 @@ const onSSEMessage = (set: SetState, get: GetState, e: MessageEvent): void => {
     void updateDtypes(set, get);
   } else if (message.state === "error") {
     get().sse?.close();
+    void updateError(set, get);
   }
   set(produce((draft: InferState) => {
     draft.currentState = message.state as SessionState;
@@ -48,5 +49,17 @@ const updateDtypes = async (set: SetState, get: GetState): Promise<void> => {
   if (!dtypes) return;
   set(produce((draft: InferState) => {
     draft.result = convertNpTypeToHumanReadable(dtypes);
+  }));
+}
+
+const updateError = async (set: SetState, get: GetState): Promise<void> => {
+  const sessionId = get().sessionId;
+  if (!sessionId) {
+    return;
+  }
+  const response = await axios.get<Response>(`/api/sessions/${sessionId}/`);
+  if (!response.data.error) return;
+  set(produce((draft: InferState) => {
+    draft.error = response.data.error || null;
   }));
 }

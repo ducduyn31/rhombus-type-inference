@@ -26,7 +26,7 @@ export const TypeDisplay: FC = () => {
       <TableHeader>
         <TableRow>
           {result ? Object.keys(result).map((key) => (
-            <TableHead key={key}>{key}</TableHead>
+            <TableHead className="text-center" key={key}>{key}</TableHead>
           )) : null}
         </TableRow>
       </TableHeader>
