@@ -23,7 +23,6 @@ setup_minio() {
   mc alias set $ALIAS "http://${MINIO_SERVER_HOST}:9000" "${MINIO_SERVER_ACCESS_KEY}" "${MINIO_SERVER_ACCESS_SECRET_KEY}"
 
   echo "Setting up MinIO server"
-  sleep 5
 
   # Create bucket if it does not exist
   retry_5_times create_bucket_if_not_exists

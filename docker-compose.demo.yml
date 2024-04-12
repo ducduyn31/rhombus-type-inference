@@ -12,7 +12,7 @@ x-backend:
   <<: *defaults
   build:
     context: .
-    dockerfile: ./apps/backend/dev.Dockerfile
+    dockerfile: ./apps/backend/Dockerfile
   restart: always
   environment:
     APP_ROOT_PASSWORD: password
@@ -23,8 +23,6 @@ x-backend:
     APP_BROKER_USER: rhombus
     APP_BROKER_PASSWORD: password
     APP_BUCKET_NAME: rhombus
-  volumes:
-    - ./apps/backend:/app
 
 services:
   backend:

@@ -24,6 +24,11 @@ Run the following command in the root:
 docker-compose -f docker-compose.demo.yml up
 ```
 
+It should takes around 30 seconds so that the automatic service configurer can finish the setup.
+
+Then go to [localhost](http://localhost:80) to see the application.
+
+
 **NOTE**: make sure there is no build cache from the previous run, You can run the clean up script below to remove the cache.
 
 For cleaning up the demo run:
