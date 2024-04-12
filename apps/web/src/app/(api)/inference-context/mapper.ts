@@ -12,10 +12,13 @@ export const npTypesToHumanReadable = {
   'float64': "Floating Point Numbers (64-bit)",
   'bool': "Boolean",
   'object': "Text",
+  'complex64': "Complex Numbers (64-bit)",
+  'complex128': "Complex Numbers (128-bit)",
+  'bytes': "Bytes",
   'category': "Categorical",
   'datetime64': "Date/Time",
   'datetime64[ns]': "Date/Time",
-  'timedelta64': "Time Delta",
+  'timedelta64': "Time Range",
 } as const;
 
 export const convertNpTypeToHumanReadable = (types: Record<string, string>): Record<string, string> => {

@@ -2,9 +2,12 @@ from functools import cache
 
 import numpy as np
 import pandas as pd
+from celery.utils.log import get_task_logger
 
 from .base import BaseConvertStrategy
 from ..utils import filter_na
+
+logger = get_task_logger(__name__)
 
 
 class DatetimeConvertStrategy(BaseConvertStrategy):
@@ -17,8 +20,12 @@ class DatetimeConvertStrategy(BaseConvertStrategy):
     def is_applicable(self) -> bool:
         t = np.dtype(self.data.dtype).char
         test_size = 10
-        test_convert_rate = 1 - pd.to_datetime(self.data.head(test_size), errors="coerce").isna().sum() / test_size
-        return test_convert_rate >= 0.5 and  (t == np.typecodes["Datetime"] or t == "O")
+        current_head = self.data.head(test_size)
+        while current_head.isna().sum() == test_size and test_size < len(self.data):
+            test_size *= 2
+            current_head = self.data.head(test_size)
+        test_convert_rate = 1 - pd.to_datetime(current_head, errors="coerce").isna().sum() / test_size
+        return test_convert_rate >= min(0.5, self.threshold) and (t == np.typecodes["Datetime"] or t == "O")
 
     @cache
     def get_compatibilities(self) -> float:

@@ -20,7 +20,7 @@ def save_model_on_state_updated(session_machine, *args, **kwargs):
 @callback()
 def publish_sse_on_state_updated(session_machine, *args, **kwargs):
     session_id = str(session_machine.session_id)
-    current_state =str(session_machine.state)
+    current_state = str(session_machine.state)
     send_event(f"session-{session_id}", "message", {
         "session_id": session_id,
         "state": current_state,
@@ -47,6 +47,7 @@ def dispatch_workers_to_validate_file(session_machine, *args, **kwargs):
 
 @callback(states=[InferStates.INFER_FILE])
 def dispatch_workers_to_infer_types(session_machine, *args, **kwargs):
-    from workers.infer_data_types import infer_data_types
+    from workers.infer_data_types import infer_data_types, on_infer_data_error
 
-    infer_data_types.delay(str(session_machine.session_id), reject_on_worker_lost=True, *args, **kwargs)
+    infer_data_types.delay(str(session_machine.session_id), reject_on_worker_lost=True,
+                           link_error=on_infer_data_error.s(str(session_machine.session_id)), *args, **kwargs)

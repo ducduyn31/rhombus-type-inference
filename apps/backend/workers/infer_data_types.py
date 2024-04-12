@@ -34,3 +34,17 @@ def infer_data_types(session_id, **kwargs):
                 process.trigger("error", error=err)
                 return
             break
+
+@app.task
+def on_infer_data_error(session_id, exception):
+    from infer_sessions.models import InferSession
+    session = InferSession.objects.filter(pk=session_id).first()
+    if not session:
+        return
+    err = {
+        "code": 400,
+        "message": "InferDataError",
+        "description": str(exception)
+    }
+    process = session.to_infer_session_process()
+    process.trigger("error", error=err)
