@@ -43,4 +43,7 @@ setup_minio() {
   fi
 }
 
-setup_minio
+until setup_minio; do
+  echo "Setup failed. Retrying in 5 seconds..."
+  sleep 5
+done
