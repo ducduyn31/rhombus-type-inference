@@ -19,6 +19,7 @@ def infer_data_types_of_chunk(source, part_number, chunk_size, **kwargs):
         chunk = iterator.get_chunk()
         chunk_skip = 0
         while part_number > 0:
+            del chunk
             chunk = iterator.get_chunk()
             gc.collect()
             logger.debug(f"Skipping chunk {chunk_skip} of {source}")

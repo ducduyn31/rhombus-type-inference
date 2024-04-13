@@ -45,9 +45,10 @@ class CsvFileHandler(BaseFileHandler):
         iterator = pd.read_csv(file_io, iterator=True, chunksize=self.CHUNK_SIZE)
         count = 0
         logger.debug("Reading file in chunks")
-        for _ in iterator:
+        for c in iterator:
             count += 1
             logger.debug(f"Chunk {count} read")
+            del c
             gc.collect()
         iterator.close()
 
