@@ -36,6 +36,8 @@ COPY --from=builder $VIRTUAL_ENV $VIRTUAL_ENV
 
 COPY configs/.pg_service.conf configs/.pgpass /root/
 
+RUN chmod 600 /root/.pgpass
+
 COPY apps/backend/scripts/entrypoint.sh /entrypoint.sh
 
 WORKDIR /app
