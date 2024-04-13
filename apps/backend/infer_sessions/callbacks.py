@@ -47,7 +47,6 @@ def dispatch_workers_to_validate_file(session_machine, *args, **kwargs):
 
 @callback(states=[InferStates.INFER_FILE])
 def dispatch_workers_to_infer_types(session_machine, *args, **kwargs):
-    from workers.infer_data_types import infer_data_types, on_infer_data_error
+    from workers.infer_data_types import infer_data_types
 
-    infer_data_types.delay(str(session_machine.session_id), reject_on_worker_lost=True,
-                           link_error=on_infer_data_error.s(str(session_machine.session_id)), *args, **kwargs)
+    infer_data_types.delay(str(session_machine.session_id), *args, **kwargs)

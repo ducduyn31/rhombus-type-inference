@@ -29,7 +29,10 @@ def try_reading_some_data_in_csv(filename):
         return False
 
 
-@app.task
+@app.task(
+    acks_late=True,
+    reject_on_worker_lost=True,
+)
 def validate_file(session_id):
     session = InferSession.objects.filter(pk=session_id).first()
     is_valid, mime_type = is_valid_mime(session.file)

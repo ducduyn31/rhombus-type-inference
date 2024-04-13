@@ -8,7 +8,10 @@ file_handlers = {
 }
 
 
-@app.task
+@app.task(
+    acks_late=True,
+    reject_on_worker_lost=True,
+)
 def infer_data_types(session_id, **kwargs):
     from infer_sessions.models import InferSession
     session = InferSession.objects.filter(pk=session_id).first()

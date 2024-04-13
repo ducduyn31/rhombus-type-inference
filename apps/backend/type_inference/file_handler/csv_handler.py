@@ -58,7 +58,6 @@ class CsvFileHandler(BaseFileHandler):
             source=self.source,
             part_number=i,
             chunk_size=self.CHUNK_SIZE,
-            reject_on_worker_lost=True,
             retries=3,
         ) for i in range(count))(persist_results.s(self.entity_id))
         logger.debug("Chord created")
